@@ -10,7 +10,7 @@ char hell = 176;  // ASCII Zeichen für helles Feld (erweiterter ASCII Zeichensa
 char dunkel = 32; // ASCII Zeichen für dunkles Feld (Leerzeichen)
 array<string, 2> spieler{ "Schwarz", "Weiss" }; // Namen der Spieler
 int zugNr = 1; // Zähler für die Zugnummer
-
+char figur; // Variable für die aktuelle Figur
 //  ----------- Funktionen --------------------
 
 // Funktion zum Aufstellen des Bretts in einem Schachmuster
@@ -76,6 +76,53 @@ void grundstellung()
     }
 }
 
+bool istGueltigerZug(int zeileVon, int spalteVon, int zeileNach, int spalteNach, char figur) {
+    // Bauern
+    if (figur == 'B' || figur == 'b') {
+        // Bauern dürfen nur einen Schritt nach vorne (außer im ersten Zug) und diagonal schlagen
+        if (figur == 'B' && zeileNach == zeileVon - 1) { // Weißer Bauer
+            return (spalteNach == spalteVon) || (abs(spalteNach - spalteVon) == 1);
+        } else if (figur == 'b' && zeileNach == zeileVon + 1) { // Schwarzer Bauer
+            return (spalteNach == spalteVon) || (abs(spalteNach - spalteVon) == 1);
+        }
+        return false;
+    }
+
+    // Türme
+    if (figur == 'T' || figur == 't') {
+        // Türme bewegen sich horizontal oder vertikal
+        return (zeileVon == zeileNach) || (spalteVon == spalteNach);
+    }
+
+    // Springer
+    if (figur == 'S' || figur == 's') {
+        // Springer bewegen sich in L-Form: 2 Schritte in eine Richtung, dann 1 Schritt senkrecht dazu
+        return (abs(zeileVon - zeileNach) == 2 && abs(spalteVon - spalteNach) == 1) || 
+               (abs(spalteVon - spalteNach) == 2 && abs(zeileVon - zeileNach) == 1);
+    }
+
+    // Läufer
+    if (figur == 'L' || figur == 'l') {
+        // Läufer bewegen sich diagonal
+        return abs(zeileVon - zeileNach) == abs(spalteVon - spalteNach);
+    }
+
+    // Dame
+    if (figur == 'D' || figur == 'd') {
+        // Die Dame bewegt sich horizontal, vertikal oder diagonal
+        return (zeileVon == zeileNach) || (spalteVon == spalteNach) || 
+               (abs(zeileVon - zeileNach) == abs(spalteVon - spalteNach));
+    }
+
+    // König
+    if (figur == 'K' || figur == 'k') {
+        // Der König bewegt sich um ein Feld in jede Richtung
+        return abs(zeileVon - zeileNach) <= 1 && abs(spalteVon - spalteNach) <= 1;
+    }
+
+    return false; // Wenn die Figur nicht erkannt wird oder keine Regel zutrifft
+}
+
 // Funktion zum Durchführen eines Zuges
 void ziehen(bool wer)
 {
@@ -83,7 +130,26 @@ void ziehen(bool wer)
      // Eingabe des Spielers (z. B. A2A4 für einen Bauernzug)
     string userEingabe;
     int zeileVon, spalteVon, zeileNach, spalteNach;
+    bool gueltigerZug = false;
 
+
+    while (!gueltigerZug) {
+        cin >> userEingabe; // Eingabe einlesen
+        // Umwandlung der Nutzereingabe in Koordinaten des Arrays
+        zeileVon = 9 - userEingabe[1] + 48;
+        spalteVon = userEingabe[0] - 64;
+        zeileNach = 9 - userEingabe[3] + 48;
+        spalteNach = userEingabe[2] - 64;
+
+        char figur = spielBrett.at(zeileVon).at(spalteVon);
+        gueltigerZug = istGueltigerZug(zeileVon, spalteVon, zeileNach, spalteNach, figur);
+
+        if (!gueltigerZug) {
+            cout << "Ungültiger Zug, bitte erneut eingeben: ";
+        }
+    }
+
+    // Eingabeaufforderung und Einlesen der Nutzereingabe
     cin >> userEingabe; // Eingabe einlesen
     // Umwandlung der Nutzereingabe in Koordinaten des Arrays
     zeileVon = 9 - userEingabe[1] + 48; // Umrechnung der Zeile (z.B. '2' -> 8)
@@ -91,11 +157,10 @@ void ziehen(bool wer)
     zeileNach = 9 - userEingabe[3] + 48;
     spalteNach = userEingabe[2] - 64;
 
-    // Ausführen des Zuges und Aktualisieren des Bretts
-    spielBrett.at(zeileNach).at(spalteNach) = spielBrett.at(zeileVon).at(spalteVon);
+    // Zug ausführen, wenn er gültig ist
+    spielBrett.at(zeileNach).at(spalteNach) = figur;
     spielBrett.at(zeileVon).at(spalteVon) = !((zeileVon + spalteVon) % 2) ? hell : dunkel;
 }
-
 // Hauptfunktion
 int main()
 {
