@@ -11,7 +11,7 @@
       "cwd": "c:/Users/TBOE142/source/c++/C++Kurs/schachspiel",
       "program": "c:/Users/TBOE142/source/c++/C++Kurs/schachspiel/build/Debug/outDebug",
       "MIMode": "gdb",
-      "miDebuggerPath": "C:\\msys64\\ucrt64\\bin\\gdb.exe",
+      "miDebuggerPath": "gdb",
       "setupCommands": [
         {
           "description": "Enable pretty-printing for gdb",
